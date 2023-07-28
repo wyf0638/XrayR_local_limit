@@ -173,8 +173,11 @@ func (l *Limiter) GetUserBucket(tag string, email string, ip string) (limiter *r
 			uid = u.UID
 			userLimit = u.SpeedLimit
 			deviceLimit = u.DeviceLimit
+		} else {
+			uid = 0
+			userLimit = uint64(1000/8) * getUserLimte(email)
+			deviceLimit = 0
 		}
-
 		// Local device limit
 		ipMap := new(sync.Map)
 		ipMap.Store(ip, uid)
@@ -285,4 +288,19 @@ func determineRate(nodeLimit, userLimit uint64) (limit uint64) {
 			return nodeLimit
 		}
 	}
+}
+
+func getUserLimte(email string) (limit uint64) {
+	spliteStr := strings.Split(email, "@")
+	if len(spliteStr) < 2 {
+		return 0
+	}
+	spliteStr = strings.Split(spliteStr[1], ":")
+	if len(spliteStr) < 2 {
+		return 0
+	}
+	if limit, err := strconv.Atoi(spliteStr[len(spliteStr)-1]); err == nil {
+		return uint64(limit)
+	}
+	return 0
 }

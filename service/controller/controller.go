@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/xtls/xray-core/common/protocol"
@@ -80,7 +81,11 @@ func (c *Controller) Start() error {
 		return errors.New("server port must > 0")
 	}
 	c.nodeInfo = newNodeInfo
-	c.Tag = c.buildNodeTag()
+	if strings.Index(c.panelType, "LG_") == 0 {
+		c.Tag = c.panelType
+	} else {
+		c.Tag = c.buildNodeTag()
+	}
 
 	// Add new tag
 	err = c.addNewTag(newNodeInfo)
@@ -229,7 +234,11 @@ func (c *Controller) nodeInfoMonitor() (err error) {
 			}
 			// Add new tag
 			c.nodeInfo = newNodeInfo
-			c.Tag = c.buildNodeTag()
+			if strings.Index(c.panelType, "LG_") == 0 {
+				c.Tag = c.panelType
+			} else {
+				c.Tag = c.buildNodeTag()
+			}
 			err = c.addNewTag(newNodeInfo)
 			if err != nil {
 				log.Print(err)

@@ -18,6 +18,7 @@ import (
 	"github.com/xtls/xray-core/infra/conf"
 
 	"github.com/XrayR-project/XrayR/api"
+	"github.com/XrayR-project/XrayR/api/myXray"
 	"github.com/XrayR-project/XrayR/api/pmpanel"
 	"github.com/XrayR-project/XrayR/api/proxypanel"
 	"github.com/XrayR-project/XrayR/api/sspanel"
@@ -75,6 +76,12 @@ func (p *Panel) loadCore(panelConfig *Config) *core.Instance {
 	if err != nil {
 		log.Panicf("Failed to understand DNS config, Please check: https://xtls.github.io/config/dns.html for help: %s", err)
 	}
+
+	coreApiConfig := &conf.APIConfig{
+		Tag:      "api",
+		Services: []string{"handlerservice", "loggerservice", "statsservice"},
+	}
+	apiConfigT, err := coreApiConfig.Build()
 
 	// Routing config
 	coreRouterConfig := &conf.RouterConfig{}
@@ -145,6 +152,7 @@ func (p *Panel) loadCore(panelConfig *Config) *core.Instance {
 			serial.ToTypedMessage(policyConfig),
 			serial.ToTypedMessage(dnsConfig),
 			serial.ToTypedMessage(routeConfig),
+			serial.ToTypedMessage(apiConfigT),
 		},
 		Inbound:  inBoundConfig,
 		Outbound: outBoundConfig,
@@ -184,6 +192,8 @@ func (p *Panel) Start() {
 			apiClient = proxypanel.New(nodeConfig.ApiConfig)
 		case "V2RaySocks":
 			apiClient = v2raysocks.New(nodeConfig.ApiConfig)
+		case "LG_VLESS":
+			apiClient = myXray.New(nodeConfig.ApiConfig)
 		default:
 			log.Panicf("Unsupport panel type: %s", nodeConfig.PanelType)
 		}

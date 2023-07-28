@@ -1,5 +1,15 @@
 [
   {
+    "listen": "127.0.0.1",
+    "port": 10085,
+    "protocol": "dokodemo-door",
+    "settings": {
+      "address": "127.0.0.1"
+    },
+    "tag": "api"
+  },
+  {
+    "tag":"a",
     "listen": "0.0.0.0",
     "port": 1234,
     "protocol": "socks",
