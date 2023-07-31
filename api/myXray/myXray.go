@@ -19,18 +19,21 @@ import (
 
 // APIClient create an api client to the panel.
 type APIClient struct {
-	client        *resty.Client
-	APIHost       string
-	NodeID        int
-	Key           string
-	NodeType      string
-	EnableVless   bool
-	VlessFlow     string
-	SpeedLimit    float64
-	DeviceLimit   int
-	LocalRuleList []api.DetectRule
-	ConfigResp    *simplejson.Json
-	access        sync.Mutex
+	client            *resty.Client
+	APIHost           string
+	NodeID            int
+	Key               string
+	NodeType          string
+	EnableVless       bool
+	VlessFlow         string
+	SpeedLimit        float64
+	DeviceLimit       int
+	LocalRuleList     []api.DetectRule
+	ConfigResp        *simplejson.Json
+	access            sync.Mutex
+	Port              int
+	TransportProtocol string
+	Path              string
 }
 
 // New create an api instance
@@ -58,16 +61,19 @@ func New(apiConfig *api.Config) *APIClient {
 	// Read local rule list
 	localRuleList := readLocalRuleList(apiConfig.RuleListPath)
 	apiClient := &APIClient{
-		client:        client,
-		NodeID:        apiConfig.NodeID,
-		Key:           apiConfig.Key,
-		APIHost:       apiConfig.APIHost,
-		NodeType:      apiConfig.NodeType,
-		EnableVless:   apiConfig.EnableVless,
-		VlessFlow:     apiConfig.VlessFlow,
-		SpeedLimit:    apiConfig.SpeedLimit,
-		DeviceLimit:   apiConfig.DeviceLimit,
-		LocalRuleList: localRuleList,
+		client:            client,
+		NodeID:            apiConfig.NodeID,
+		Key:               apiConfig.Key,
+		APIHost:           apiConfig.APIHost,
+		NodeType:          apiConfig.NodeType,
+		EnableVless:       apiConfig.EnableVless,
+		VlessFlow:         apiConfig.VlessFlow,
+		SpeedLimit:        apiConfig.SpeedLimit,
+		DeviceLimit:       apiConfig.DeviceLimit,
+		LocalRuleList:     localRuleList,
+		Port:              apiConfig.Port,
+		TransportProtocol: apiConfig.TransportProtocol,
+		Path:              apiConfig.Path,
 	}
 	return apiClient
 }
@@ -209,12 +215,12 @@ func (c *APIClient) ParseV2rayNodeResponse(nodeInfoResponse *simplejson.Json) (*
 	nodeInfo := &api.NodeInfo{
 		NodeType:          c.NodeType,
 		NodeID:            c.NodeID,
-		Port:              13555,
+		Port:              uint32(c.Port),
 		AlterID:           0,
-		TransportProtocol: "tcp",
+		TransportProtocol: c.TransportProtocol,
 		EnableTLS:         false,
-		Path:              "",
-		Host:              "127.0.0.1",
+		Path:              c.Path,
+		Host:              "",
 		EnableVless:       c.EnableVless,
 		VlessFlow:         c.VlessFlow,
 		ServiceName:       serviceName,
